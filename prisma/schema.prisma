@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Portfolio {
+  id           String        @id @default(cuid())
+  name         String
+  baseCurrency String        @default("USD")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  transactions Transaction[]
+
+  @@index([createdAt])
+}
+
+enum TransactionType {
+  BUY
+  SELL
+  DEPOSIT
+  WITHDRAW
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  portfolioId String
+  type        TransactionType
+  symbol      String?
+  quantity    Decimal?
+  price       Decimal?
+  cashAmount  Decimal?
+  occurredAt  DateTime        @default(now())
+  note        String?
+  createdAt   DateTime        @default(now())
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioId, occurredAt])
+  @@index([symbol])
+}
